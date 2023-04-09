@@ -8,4 +8,4 @@ TYPO3:
               renderingOptions:
                 translation:
                   translationFiles:
-                    53: 'EXT:form_mailchimp/Resources/Private/Language/locallang.xlf'
+                    2354: 'EXT:form_mailchimp/Resources/Private/Language/locallang.xlf'
