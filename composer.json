@@ -1,0 +1,33 @@
+{
+	"name": "wapplersystems/form_mailchimp",
+	"type": "typo3-cms-extension",
+	"description": "MailChimp form finisher",
+	"autoload": {
+		"psr-4": {
+			"WapplerSystems\\FormMailchimp\\": "Classes"
+		}
+	},
+	"keywords": [
+		"TYPO3 CMS"
+	],
+	"authors": [
+		{
+			"name": "Sven Wappler",
+			"email": "info@wappler.systems",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"typo3/cms-core": "^11",
+		"typo3/cms-form": "^11",
+		"drewm/mailchimp-api": "^2.5"
+	},
+	"replace": {
+	},
+	"license": "GPL-2.0+",
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "form_mailchimp"
+		}
+	}
+}

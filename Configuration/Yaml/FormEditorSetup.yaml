@@ -1,0 +1,112 @@
+TYPO3:
+  CMS:
+    Form:
+      prototypes:
+        standard:
+          formEditor:
+            formEditorFluidConfiguration:
+              partialRootPaths:
+                30: 'EXT:form/Resources/Private/Backend/Partials/FormEditor/'
+              layoutRootPaths:
+                30: 'EXT:form/Resources/Private/Backend/Layouts/FormEditor/'
+            translationFiles:
+              540: 'EXT:form_mailchimp/Resources/Private/Language/form.xlf'
+          formElementsDefinition:
+            Form:
+              formEditor:
+                editors:
+                  900:
+                    selectOptions:
+                      2354:
+                        value: MailChimpSignIn
+                        label: MailChimp - Sign in
+                      2355:
+                        value: MailChimpSignOut
+                        label: MailChimp - Sign out
+                propertyCollections:
+                  finishers:
+                    2354:
+                      identifier: MailChimpSignIn
+                      editors:
+                        100:
+                          label: MailChimp - Sign in
+                          identifier: 'header'
+                          templateName: 'Inspector-CollectionElementHeaderEditor'
+                        160:
+                          identifier: apiKey
+                          templateName: Inspector-TextEditor
+                          label: 'API key'
+                          propertyPath: options.apiKey
+                        170:
+                          identifier: listId
+                          templateName: Inspector-TextEditor
+                          label: 'List id'
+                          propertyPath: options.listId
+                        9999:
+                          identifier: 'removeButton'
+                          templateName: 'Inspector-RemoveElementEditor'
+                    2355:
+                      identifier: MailChimpSignOut
+                      editors:
+                        100:
+                          label: MailChimp - Sign out
+                          identifier: 'header'
+                          templateName: 'Inspector-CollectionElementHeaderEditor'
+                        160:
+                          identifier: apiKey
+                          templateName: Inspector-TextEditor
+                          label: 'API key'
+                          propertyPath: options.apiKey
+                        170:
+                          identifier: listId
+                          templateName: Inspector-TextEditor
+                          label: 'List id'
+                          propertyPath: options.listId
+                        9999:
+                          identifier: 'removeButton'
+                          templateName: 'Inspector-RemoveElementEditor'
+          finishersDefinition:
+            MailChimpSignIn:
+              implementationClassName: WapplerSystems\FormMailchimp\Form\Finishers\MailchimpSignInFormFinisher
+              formEditor:
+                iconIdentifier: t3-form-icon-finisher
+                label: Mailchimp - Sign in
+                predefinedDefaults:
+                  options:
+                    apiKey: ''
+                    listId: ''
+              FormEngine:
+                label: Mailchimp
+                elements:
+                  apiKey:
+                    label: 'API Key'
+                    config:
+                      type: input
+                      eval: required
+                  listId:
+                    label: 'List ID'
+                    config:
+                      type: input
+                      eval: required
+            MailChimpSignOut:
+              implementationClassName: WapplerSystems\FormMailchimp\Form\Finishers\MailchimpSignOutFormFinisher
+              formEditor:
+                iconIdentifier: t3-form-icon-finisher
+                label: Mailchimp - Sign out
+                predefinedDefaults:
+                  options:
+                    apiKey: ''
+                    listId: ''
+              FormEngine:
+                label: Mailchimp
+                elements:
+                  apiKey:
+                    label: 'API Key'
+                    config:
+                      type: input
+                      eval: required
+                  listId:
+                    label: 'List ID'
+                    config:
+                      type: input
+                      eval: required
