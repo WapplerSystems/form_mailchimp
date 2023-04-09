@@ -3,7 +3,6 @@ namespace WapplerSystems\FormMailchimp\Finishers;
 
 use DrewM\MailChimp\MailChimp;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
-use TYPO3\CMS\Form\Service\TranslationService;
 
 class MailchimpSignInFormFinisher extends AbstractFinisher
 {
@@ -51,12 +50,6 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
                     'status' => 'pending',
                     #'language' => 'de',
                     'ip_signup' => $_SERVER['REMOTE_ADDR'],
-                    'merge_fields' => [
-                        'FNAME' => $name,
-                        'PLZ' => $formRuntime['postalcode'] ?? '',
-                        'LAND' => $formRuntime['country'] ?? '',
-                    ],
-
                 ]);
 
             } elseif ($result['status'] === 'pending') {
