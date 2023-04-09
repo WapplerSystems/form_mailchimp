@@ -4,13 +4,8 @@ TYPO3:
       prototypes:
         standard:
           formEditor:
-            formEditorFluidConfiguration:
-              partialRootPaths:
-                30: 'EXT:form/Resources/Private/Backend/Partials/FormEditor/'
-              layoutRootPaths:
-                30: 'EXT:form/Resources/Private/Backend/Layouts/FormEditor/'
             translationFiles:
-              540: 'EXT:form_mailchimp/Resources/Private/Language/form.xlf'
+              2354: 'EXT:form_mailchimp/Resources/Private/Language/form.xlf'
           formElementsDefinition:
             Form:
               formEditor:
@@ -67,7 +62,7 @@ TYPO3:
                           templateName: 'Inspector-RemoveElementEditor'
           finishersDefinition:
             MailChimpSignIn:
-              implementationClassName: WapplerSystems\FormMailchimp\Form\Finishers\MailchimpSignInFormFinisher
+              implementationClassName: WapplerSystems\FormMailchimp\Finishers\MailchimpSignInFormFinisher
               formEditor:
                 iconIdentifier: t3-form-icon-finisher
                 label: Mailchimp - Sign in
@@ -89,7 +84,7 @@ TYPO3:
                       type: input
                       eval: required
             MailChimpSignOut:
-              implementationClassName: WapplerSystems\FormMailchimp\Form\Finishers\MailchimpSignOutFormFinisher
+              implementationClassName: WapplerSystems\FormMailchimp\Finishers\MailchimpSignOutFormFinisher
               formEditor:
                 iconIdentifier: t3-form-icon-finisher
                 label: Mailchimp - Sign out

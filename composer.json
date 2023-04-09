@@ -1,7 +1,7 @@
 {
 	"name": "wapplersystems/form_mailchimp",
 	"type": "typo3-cms-extension",
-	"description": "MailChimp form finisher",
+	"description": "MailChimp form finishers for sing in and sing out",
 	"autoload": {
 		"psr-4": {
 			"WapplerSystems\\FormMailchimp\\": "Classes"

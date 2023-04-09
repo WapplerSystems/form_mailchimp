@@ -1,11 +1,11 @@
 <?php
-namespace WapplerSystems\FormMailchimp\Form\Finishers;
+namespace WapplerSystems\FormMailchimp\Finishers;
 
 use DrewM\MailChimp\MailChimp;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
 use TYPO3\CMS\Form\Service\TranslationService;
 
-class MailchimpSignInFormFinisher extends AbstractFinisher
+class MailchimpSignOutFormFinisher extends AbstractFinisher
 {
 
     /**

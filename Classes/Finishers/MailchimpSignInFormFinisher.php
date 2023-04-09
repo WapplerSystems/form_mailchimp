@@ -1,11 +1,11 @@
 <?php
-namespace WapplerSystems\FormMailchimp\Form\Finishers;
+namespace WapplerSystems\FormMailchimp\Finishers;
 
 use DrewM\MailChimp\MailChimp;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
 use TYPO3\CMS\Form\Service\TranslationService;
 
-class MailchimpSignOutFormFinisher extends AbstractFinisher
+class MailchimpSignInFormFinisher extends AbstractFinisher
 {
 
     /**
@@ -25,14 +25,6 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
             return;
         }
 
-        $translationService = TranslationService::getInstance();
-        if (isset($this->options['translation']['language']) && !empty($this->options['translation']['language'])) {
-            $languageBackup = $translationService->getLanguage();
-            $translationService->setLanguage($this->options['translation']['language']);
-        }
-        if (!empty($languageBackup)) {
-            $translationService->setLanguage($languageBackup);
-        }
 
         $apiKey = $this->parseOption('apiKey');
         $listId = $this->parseOption('listId');
