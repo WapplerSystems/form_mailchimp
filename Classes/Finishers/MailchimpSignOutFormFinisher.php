@@ -34,17 +34,8 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
             $mailChimp = new MailChimp($apiKey);
 
             $subscriberHash = MailChimp::subscriberHash($email);
-            $result = $mailChimp->get("lists/$listId/members/$subscriberHash");
-            if ($result['status'] === 404) {
 
-
-                $result = $mailChimp->delete("lists/$listId/members/$subscriberHash");
-
-            } elseif ($result['status'] === 'pending') {
-                // send mail again
-
-            }
-
+            $result = $mailChimp->delete("lists/$listId/members/$subscriberHash");
 
         } catch (\Exception $e) {
 
