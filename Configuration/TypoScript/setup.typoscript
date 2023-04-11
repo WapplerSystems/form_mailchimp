@@ -1,0 +1,7 @@
+plugin.tx_formmailchimp {
+
+  settings {
+    apiKey = {$plugin.tx_formmailchimp.settings.apiKey}
+    listId = {$plugin.tx_formmailchimp.settings.listId}
+  }
+}

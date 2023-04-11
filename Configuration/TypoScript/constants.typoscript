@@ -1,0 +1,8 @@
+plugin.tx_formmailchimp {
+  settings {
+    # cat=plugin.tx_formmailchimp//a; type=string; label=Mailchimp API Key
+    apiKey =
+    # cat=plugin.tx_formmailchimp//b; type=string; label=Mailchimp list ID
+    listId =
+  }
+}
