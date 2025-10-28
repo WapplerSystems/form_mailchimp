@@ -7,11 +7,4 @@ module.tx_form {
     }
 }
 
-plugin.tx_form {
-    settings {
-        yamlConfigurations {
-            541 = EXT:form_mailchimp/Configuration/Yaml/FormSetup.yaml
-            542 = EXT:form_mailchimp/Configuration/Yaml/FormEditorSetup.yaml
-        }
-    }
-}
+
