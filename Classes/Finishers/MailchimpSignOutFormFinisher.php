@@ -1,60 +1,82 @@
 <?php
+
+declare(strict_types=1);
+
 namespace WapplerSystems\FormMailchimp\Finishers;
 
-use DrewM\MailChimp\MailChimp;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use MailchimpMarketing\ApiClient;
+use MailchimpMarketing\ApiException;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
+use WapplerSystems\OauthService\Service\OAuthClientService;
 
 class MailchimpSignOutFormFinisher extends AbstractFinisher
 {
+    public function __construct(
+        private readonly OAuthClientService $oAuthClientService,
+    ) {
+        parent::__construct();
+    }
 
-    /**
-     * Executes this finisher
-     * @see AbstractFinisher::execute()
-     *
-     */
-    protected function executeInternal()
+    protected function executeInternal(): void
     {
-
         $formRuntime = $this->finisherContext->getFormRuntime();
-        $elements = $formRuntime->getFormDefinition()->getRenderablesRecursively();
-
         $email = $formRuntime['email'] ?? null;
 
         if (empty($email)) {
             return;
         }
 
-        $configurationManager = GeneralUtility::makeInstance( ConfigurationManagerInterface::class);
-        $settings = $configurationManager->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_FULL_TYPOSCRIPT);
-
-        $tsApiKey = $settings['plugin.']['tx_formmailchimp.']['settings.']['apiKey'] ?? '';
-        $tsListId = $settings['plugin.']['tx_formmailchimp.']['settings.']['listId'] ?? '';
-
-        $apiKey = $this->parseOption('apiKey');
-        if ($apiKey === '') {
-            $apiKey = $tsApiKey;
-        }
-        $listId = $this->parseOption('listId');
+        $listId = $this->parseOption('listId') ?: '';
         if ($listId === '') {
-            $listId = $tsListId;
+            return;
         }
 
-        if ($apiKey === null || $apiKey === '' || $listId === null || $listId === '') return;
+        $apiClient = $this->buildApiClient();
+        if ($apiClient === null) {
+            return;
+        }
 
         try {
-            $mailChimp = new MailChimp($apiKey);
-
-            $subscriberHash = MailChimp::subscriberHash($email);
-
-            $result = $mailChimp->delete("lists/$listId/members/$subscriberHash");
-
-        } catch (\Exception $e) {
-
+            $subscriberHash = md5(strtolower($email));
+            $apiClient->lists->deleteListMember($listId, $subscriberHash);
+        } catch (ApiException $e) {
+            if ($e->getCode() !== 404) {
+                throw $e;
+            }
         }
-
     }
 
+    private function buildApiClient(): ?ApiClient
+    {
+        $clientUid = (int)($this->parseOption('clientUid') ?? 0);
 
+        $connection = $clientUid > 0
+            ? $this->oAuthClientService->getActiveConnectionByClientUid($clientUid)
+            : $this->oAuthClientService->getActiveConnectionByProvider('mailchimp');
+
+        if ($connection !== null) {
+            $apiClient = new ApiClient();
+            $apiClient->setConfig([
+                'accessToken' => $connection['access_token'],
+                'server' => $this->parseOption('server') ?: 'us1',
+            ]);
+            return $apiClient;
+        }
+
+        // Fallback: API key
+        $apiKey = $this->parseOption('apiKey') ?: '';
+        if ($apiKey === '') {
+            return null;
+        }
+
+        $parts = explode('-', $apiKey);
+        $server = count($parts) > 1 ? end($parts) : 'us1';
+
+        $apiClient = new ApiClient();
+        $apiClient->setConfig([
+            'apiKey' => $apiKey,
+            'server' => $server,
+        ]);
+        return $apiClient;
+    }
 }

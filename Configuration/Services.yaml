@@ -6,3 +6,9 @@ services:
 
   WapplerSystems\FormMailchimp\:
     resource: '../Classes/*'
+
+  WapplerSystems\FormMailchimp\Finishers\MailchimpSignInFormFinisher:
+    public: true
+
+  WapplerSystems\FormMailchimp\Finishers\MailchimpSignOutFormFinisher:
+    public: true

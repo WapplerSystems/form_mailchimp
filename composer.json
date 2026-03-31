@@ -1,14 +1,16 @@
 {
 	"name": "wapplersystems/form_mailchimp",
 	"type": "typo3-cms-extension",
-	"description": "MailChimp form finishers for sign in and sign out",
-	"autoload": {
-		"psr-4": {
-			"WapplerSystems\\FormMailchimp\\": "Classes"
-		}
-	},
+	"description": "MailChimp form finishers for subscribe and unsubscribe",
+	"version": "13.0.0",
+	"license": "GPL-2.0-or-later",
 	"keywords": [
-		"TYPO3 CMS"
+		"TYPO3",
+		"typo3-extension",
+		"mailchimp",
+		"form",
+		"finisher",
+		"newsletter"
 	],
 	"authors": [
 		{
@@ -18,13 +20,17 @@
 		}
 	],
 	"require": {
-		"typo3/cms-core": "^13",
-		"typo3/cms-form": "^13",
-		"mailchimp/marketing": "^3.0"
+		"php": "^8.2",
+		"typo3/cms-core": "^13.4",
+		"typo3/cms-form": "^13.4",
+		"mailchimp/marketing": "^3.0",
+		"wapplersystems/oauth-service": "*"
 	},
-	"replace": {
+	"autoload": {
+		"psr-4": {
+			"WapplerSystems\\FormMailchimp\\": "Classes"
+		}
 	},
-	"license": "GPL-2.0+",
 	"extra": {
 		"typo3/cms": {
 			"extension-key": "form_mailchimp"
