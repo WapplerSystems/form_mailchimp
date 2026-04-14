@@ -12,3 +12,14 @@ services:
 
   WapplerSystems\FormMailchimp\Finishers\MailchimpSignOutFormFinisher:
     public: true
+
+  WapplerSystems\FormMailchimp\Service\MailchimpFormContext:
+    public: true
+    shared: true
+
+  WapplerSystems\FormMailchimp\Form\Hook\AfterSubmitHook:
+    public: true
+
+  MailchimpMarketing\ApiClient:
+    public: true
+    shared: true

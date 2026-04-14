@@ -7,14 +7,28 @@ namespace WapplerSystems\FormMailchimp\Finishers;
 use MailchimpMarketing\ApiClient;
 use MailchimpMarketing\ApiException;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
+use TYPO3\CMS\Form\Exception;
+use WapplerSystems\FormMailchimp\Service\MailchimpFormContext;
 use WapplerSystems\OauthService\Service\OAuthClientService;
 
 class MailchimpSignOutFormFinisher extends AbstractFinisher
 {
     public function __construct(
         private readonly OAuthClientService $oAuthClientService,
+        private readonly MailchimpFormContext $context,
     ) {
         parent::__construct();
+    }
+
+    /**
+     * Called by EXT:form when the form definition is built — before validators run.
+     * Populates MailchimpFormContext so AfterSubmitHook, OptinValidator and
+     * OptoutValidator can access listId and clientUid.
+     */
+    public function setOptions(array $options): void
+    {
+        parent::setOptions($options);
+        $this->context->setSettings($this->options);
     }
 
     protected function executeInternal(): void
@@ -55,28 +69,18 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
             : $this->oAuthClientService->getActiveConnectionByProvider('mailchimp');
 
         if ($connection !== null) {
+            $server = $this->oAuthClientService->getConnectionMetadataValue($connection, 'dc')
+                ?? $this->parseOption('server')
+                ?: 'us1';
+
             $apiClient = new ApiClient();
             $apiClient->setConfig([
                 'accessToken' => $connection['access_token'],
-                'server' => $this->parseOption('server') ?: 'us1',
+                'server' => $server,
             ]);
             return $apiClient;
         }
 
-        // Fallback: API key
-        $apiKey = $this->parseOption('apiKey') ?: '';
-        if ($apiKey === '') {
-            return null;
-        }
-
-        $parts = explode('-', $apiKey);
-        $server = count($parts) > 1 ? end($parts) : 'us1';
-
-        $apiClient = new ApiClient();
-        $apiClient->setConfig([
-            'apiKey' => $apiKey,
-            'server' => $server,
-        ]);
-        return $apiClient;
+        throw new \RuntimeException('No active Mailchimp connection found.');
     }
 }

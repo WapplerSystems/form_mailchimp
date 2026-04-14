@@ -1,37 +1,35 @@
-TYPO3:
-  CMS:
-    Form:
+
       prototypes:
         standard:
           formEditor:
             translationFiles:
-              2354: 'EXT:form_mailchimp/Resources/Private/Language/form.xlf'
+              1775054189: 'EXT:form_mailchimp/Resources/Private/Language/form.xlf'
           formElementsDefinition:
             Form:
               formEditor:
                 editors:
                   900:
                     selectOptions:
-                      2354:
+                      1775054189:
                         value: MailChimpSignIn
                         label: MailChimp - Sign in
-                      2355:
+                      1775054190:
                         value: MailChimpSignOut
                         label: MailChimp - Sign out
                 propertyCollections:
                   finishers:
-                    2354:
+                    1775054189:
                       identifier: MailChimpSignIn
                       editors:
                         100:
                           label: MailChimp - Sign in
                           identifier: 'header'
                           templateName: 'Inspector-CollectionElementHeaderEditor'
-                        160:
-                          identifier: apiKey
+                        150:
+                          identifier: clientUid
                           templateName: Inspector-TextEditor
-                          label: 'API key'
-                          propertyPath: options.apiKey
+                          label: 'OAuth Client UID'
+                          propertyPath: options.clientUid
                         170:
                           identifier: listId
                           templateName: Inspector-TextEditor
@@ -40,18 +38,18 @@ TYPO3:
                         9999:
                           identifier: 'removeButton'
                           templateName: 'Inspector-RemoveElementEditor'
-                    2355:
+                    1775054190:
                       identifier: MailChimpSignOut
                       editors:
                         100:
                           label: MailChimp - Sign out
                           identifier: 'header'
                           templateName: 'Inspector-CollectionElementHeaderEditor'
-                        160:
-                          identifier: apiKey
+                        150:
+                          identifier: clientUid
                           templateName: Inspector-TextEditor
-                          label: 'API key'
-                          propertyPath: options.apiKey
+                          label: 'OAuth Client UID'
+                          propertyPath: options.clientUid
                         170:
                           identifier: listId
                           templateName: Inspector-TextEditor
@@ -68,16 +66,11 @@ TYPO3:
                 label: Mailchimp - Sign in
                 predefinedDefaults:
                   options:
-                    apiKey: ''
+                    clientUid: ''
                     listId: ''
               FormEngine:
                 label: Mailchimp
                 elements:
-                  apiKey:
-                    label: 'API Key'
-                    config:
-                      type: input
-                      eval: required
                   listId:
                     label: 'List ID'
                     config:
@@ -90,16 +83,11 @@ TYPO3:
                 label: Mailchimp - Sign out
                 predefinedDefaults:
                   options:
-                    apiKey: ''
+                    clientUid: ''
                     listId: ''
               FormEngine:
                 label: Mailchimp
                 elements:
-                  apiKey:
-                    label: 'API Key'
-                    config:
-                      type: input
-                      eval: required
                   listId:
                     label: 'List ID'
                     config:

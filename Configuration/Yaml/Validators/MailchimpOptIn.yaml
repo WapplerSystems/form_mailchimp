@@ -1,0 +1,8 @@
+prototypes:
+  standard:
+    validatorsDefinition:
+      MailchimpOptIn:
+        implementationClassName: 'WapplerSystems\FormMailchimp\Form\Validator\OptinValidator'
+        formEditor:
+          iconIdentifier: form-validator
+          label: 'Mailchimp Opt In'

@@ -1,0 +1,14 @@
+imports:
+  - { resource: './Validators/MailchimpOptIn.yaml' }
+  - { resource: './Validators/MailchimpOptOut.yaml' }
+  - { resource: './FormElements/Overrides/Email.yaml' }
+
+
+prototypes:
+  standard:
+    formElementsDefinition:
+      Form:
+        renderingOptions:
+          translation:
+            translationFiles:
+              2354: 'EXT:form_mailchimp/Resources/Private/Language/form.xlf'

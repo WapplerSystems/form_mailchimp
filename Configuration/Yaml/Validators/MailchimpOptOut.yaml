@@ -1,0 +1,8 @@
+prototypes:
+  standard:
+    validatorsDefinition:
+      MailchimpOptOut:
+        implementationClassName: 'WapplerSystems\FormMailchimp\Form\Validator\OptoutValidator'
+        formEditor:
+          iconIdentifier: form-validator
+          label: 'Mailchimp Opt Out'
