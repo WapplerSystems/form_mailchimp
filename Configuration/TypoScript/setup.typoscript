@@ -1,16 +1,7 @@
-plugin.tx_formmailchimp {
-
-  settings {
-    apiKey = {$plugin.tx_formmailchimp.settings.apiKey}
-    listId = {$plugin.tx_formmailchimp.settings.listId}
-  }
-}
-
 plugin.tx_form {
   settings {
     yamlConfigurations {
       541 = EXT:form_mailchimp/Configuration/Yaml/FormSetup.yaml
-      542 = EXT:form_mailchimp/Configuration/Yaml/FormEditorSetup.yaml
     }
   }
 }

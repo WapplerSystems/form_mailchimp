@@ -3,9 +3,101 @@ TYPO3:
     Form:
       prototypes:
         standard:
+          formEditor:
+            translationFiles:
+              2354: 'EXT:form_mailchimp/Resources/Private/Language/form.xlf'
+            dynamicJavaScriptModules:
+              additionalViewModelModules:
+                mailchimp: '@wapplersystems/form-mailchimp/Backend/FormEditor/ConnectionSelectViewModel.js'
           formElementsDefinition:
             Form:
               renderingOptions:
                 translation:
                   translationFiles:
                     2354: 'EXT:form_mailchimp/Resources/Private/Language/form.xlf'
+              formEditor:
+                editors:
+                  900:
+                    selectOptions:
+                      2354:
+                        value: MailChimpSignIn
+                        label: MailChimp - Sign in
+                      2355:
+                        value: MailChimpSignOut
+                        label: MailChimp - Sign out
+                propertyCollections:
+                  finishers:
+                    2354:
+                      identifier: MailChimpSignIn
+                      editors:
+                        100:
+                          label: MailChimp - Sign in
+                          identifier: 'header'
+                          templateName: 'Inspector-CollectionElementHeaderEditor'
+                        200:
+                          identifier: oauthClient
+                          templateName: Inspector-TextEditor
+                          label: 'OAuth Client'
+                          propertyPath: options.oauthClient
+                        300:
+                          identifier: listId
+                          templateName: Inspector-TextEditor
+                          label: 'List id'
+                          propertyPath: options.listId
+                        400:
+                          identifier: server
+                          templateName: Inspector-TextEditor
+                          label: 'Datacenter (e.g. us1)'
+                          propertyPath: options.server
+                        9999:
+                          identifier: 'removeButton'
+                          templateName: 'Inspector-RemoveElementEditor'
+                    2355:
+                      identifier: MailChimpSignOut
+                      editors:
+                        100:
+                          label: MailChimp - Sign out
+                          identifier: 'header'
+                          templateName: 'Inspector-CollectionElementHeaderEditor'
+                        200:
+                          identifier: oauthClient
+                          templateName: Inspector-TextEditor
+                          label: 'OAuth Client'
+                          propertyPath: options.oauthClient
+                        300:
+                          identifier: listId
+                          templateName: Inspector-TextEditor
+                          label: 'List id'
+                          propertyPath: options.listId
+                        400:
+                          identifier: server
+                          templateName: Inspector-TextEditor
+                          label: 'Datacenter (e.g. us1)'
+                          propertyPath: options.server
+                        9999:
+                          identifier: 'removeButton'
+                          templateName: 'Inspector-RemoveElementEditor'
+          finishersDefinition:
+            MailChimpSignIn:
+              implementationClassName: WapplerSystems\FormMailchimp\Finishers\MailchimpSignInFormFinisher
+              formEditor:
+                iconIdentifier: form-finisher-mailchimp
+                label: Mailchimp - Sign in
+                predefinedDefaults:
+                  options:
+                    oauthClient: ''
+                    listId: ''
+                    server: ''
+            MailChimpSignOut:
+              implementationClassName: WapplerSystems\FormMailchimp\Finishers\MailchimpSignOutFormFinisher
+              formEditor:
+                iconIdentifier: form-finisher-mailchimp
+                label: Mailchimp - Sign out
+                predefinedDefaults:
+                  options:
+                    oauthClient: ''
+                    listId: ''
+                    server: ''
+      persistenceManager:
+        allowedExtensionPaths:
+          2354: EXT:form_mailchimp/Resources/Private/Forms/

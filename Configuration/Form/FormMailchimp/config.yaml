@@ -1,0 +1,5 @@
+name: wapplersystems/form-mailchimp
+priority: 541
+
+imports:
+  - { resource: 'EXT:form_mailchimp/Configuration/Yaml/FormSetup.yaml' }

@@ -13,9 +13,7 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
 {
     public function __construct(
         private readonly OAuthClientService $oAuthClientService,
-    ) {
-        parent::__construct();
-    }
+    ) {}
 
     protected function executeInternal(): void
     {
@@ -48,34 +46,20 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
 
     private function buildApiClient(): ?ApiClient
     {
-        $clientUid = (int)($this->parseOption('clientUid') ?? 0);
-
-        $connection = $clientUid > 0
-            ? $this->oAuthClientService->getActiveConnectionByClientUid($clientUid)
-            : $this->oAuthClientService->getActiveConnectionByProvider('mailchimp');
-
-        if ($connection !== null) {
-            $apiClient = new ApiClient();
-            $apiClient->setConfig([
-                'accessToken' => $connection['access_token'],
-                'server' => $this->parseOption('server') ?: 'us1',
-            ]);
-            return $apiClient;
-        }
-
-        // Fallback: API key
-        $apiKey = $this->parseOption('apiKey') ?: '';
-        if ($apiKey === '') {
+        $clientUid = (int)($this->parseOption('oauthClient') ?? 0);
+        if ($clientUid <= 0) {
             return null;
         }
 
-        $parts = explode('-', $apiKey);
-        $server = count($parts) > 1 ? end($parts) : 'us1';
+        $connection = $this->oAuthClientService->getActiveConnectionByClientUid($clientUid);
+        if ($connection === null || $connection['access_token'] === '') {
+            return null;
+        }
 
         $apiClient = new ApiClient();
         $apiClient->setConfig([
-            'apiKey' => $apiKey,
-            'server' => $server,
+            'accessToken' => $connection['access_token'],
+            'server' => $this->parseOption('server') ?: 'us1',
         ]);
         return $apiClient;
     }
