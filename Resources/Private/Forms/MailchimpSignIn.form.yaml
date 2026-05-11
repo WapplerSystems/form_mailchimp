@@ -1,28 +1,29 @@
-renderingOptions:
-  submitButtonLabel: 'Anmelden'
+
 identifier: mailchimpsignin
-label: 'Mailchimp Sign-In'
 type: Form
+label: 'Mailchimp Sign-In'
 prototypeName: standard
+renderingOptions:
+  submitButtonLabel: Anmelden
 finishers:
   -
-    identifier: MailChimpSignIn
     options:
       oauthClient: '1'
       listId: ''
-      server: 'us1'
+      server: us1
+    identifier: MailChimpSignIn
   -
-    identifier: Confirmation
     options:
       message: 'Vielen Dank. Sie erhalten eine Bestätigungs-E-Mail von Mailchimp.'
       contentElementUid: ''
+    identifier: Confirmation
 renderables:
   -
     renderingOptions:
       previousButtonLabel: 'previous Page'
       nextButtonLabel: 'next Page'
     identifier: page-1
-    label: 'Newsletter-Anmeldung'
+    label: Newsletter-Anmeldung
     type: Page
     renderables:
       -
@@ -40,14 +41,15 @@ renderables:
       -
         defaultValue: ''
         identifier: email
-        label: 'E-Mail'
+        label: E-Mail
         type: Text
         properties:
           fluidAdditionalAttributes:
-            placeholder: 'E-Mail-Adresse'
+            placeholder: E-Mail-Adresse
             required: required
         validators:
           -
             identifier: NotEmpty
           -
             identifier: EmailAddress
+variants: {  }

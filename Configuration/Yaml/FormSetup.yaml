@@ -44,11 +44,6 @@ TYPO3:
                           templateName: Inspector-TextEditor
                           label: 'List id'
                           propertyPath: options.listId
-                        400:
-                          identifier: server
-                          templateName: Inspector-TextEditor
-                          label: 'Datacenter (e.g. us1)'
-                          propertyPath: options.server
                         9999:
                           identifier: 'removeButton'
                           templateName: 'Inspector-RemoveElementEditor'
@@ -69,11 +64,6 @@ TYPO3:
                           templateName: Inspector-TextEditor
                           label: 'List id'
                           propertyPath: options.listId
-                        400:
-                          identifier: server
-                          templateName: Inspector-TextEditor
-                          label: 'Datacenter (e.g. us1)'
-                          propertyPath: options.server
                         9999:
                           identifier: 'removeButton'
                           templateName: 'Inspector-RemoveElementEditor'

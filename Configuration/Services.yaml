@@ -13,5 +13,16 @@ services:
   WapplerSystems\FormMailchimp\Finishers\MailchimpSignOutFormFinisher:
     public: true
 
+  WapplerSystems\FormMailchimp\Service\MailchimpFormContext:
+    public: true
+    shared: true
+
+  WapplerSystems\FormMailchimp\Mailchimp\Api:
+    public: true
+    shared: true
+
+  WapplerSystems\FormMailchimp\Form\Hook\AfterSubmitHook:
+    public: true
+
   WapplerSystems\FormMailchimp\Controller\Backend\FormEditorAjaxController:
     public: true

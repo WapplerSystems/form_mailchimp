@@ -4,16 +4,30 @@ declare(strict_types=1);
 
 namespace WapplerSystems\FormMailchimp\Finishers;
 
-use MailchimpMarketing\ApiClient;
 use MailchimpMarketing\ApiException;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
+use WapplerSystems\FormMailchimp\Mailchimp\Api;
+use WapplerSystems\FormMailchimp\Service\MailchimpFormContext;
 use WapplerSystems\OauthService\Service\OAuthClientService;
 
 class MailchimpSignOutFormFinisher extends AbstractFinisher
 {
     public function __construct(
         private readonly OAuthClientService $oAuthClientService,
+        private readonly MailchimpFormContext $context,
+        private readonly Api $api,
     ) {}
+
+    /**
+     * Called by EXT:form when the form definition is built — before validators run.
+     * Populates MailchimpFormContext so AfterSubmitHook (and any future validators)
+     * can access listId, oauthClient and server.
+     */
+    public function setOptions(array $options): void
+    {
+        parent::setOptions($options);
+        $this->context->setSettings($this->options);
+    }
 
     protected function executeInternal(): void
     {
@@ -29,7 +43,7 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
             return;
         }
 
-        $apiClient = $this->buildApiClient();
+        $apiClient = $this->ensureConnectedClient();
         if ($apiClient === null) {
             return;
         }
@@ -44,8 +58,17 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
         }
     }
 
-    private function buildApiClient(): ?ApiClient
+    /**
+     * Returns the shared, hook-authenticated ApiClient. As a fallback (e.g. when
+     * the afterSubmit hook did not run) it connects on demand from the
+     * finisher's own options so executeInternal() keeps working standalone.
+     */
+    private function ensureConnectedClient(): ?\MailchimpMarketing\ApiClient
     {
+        if ($this->api->isConnected()) {
+            return $this->api->getClient();
+        }
+
         $clientUid = (int)($this->parseOption('oauthClient') ?? 0);
         if ($clientUid <= 0) {
             return null;
@@ -56,11 +79,10 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
             return null;
         }
 
-        $apiClient = new ApiClient();
-        $apiClient->setConfig([
-            'accessToken' => $connection['access_token'],
-            'server' => $this->parseOption('server') ?: 'us1',
-        ]);
-        return $apiClient;
+        $this->api->connect(
+            $connection['access_token'],
+            (string)($this->parseOption('server') ?: 'us1'),
+        );
+        return $this->api->getClient();
     }
 }
