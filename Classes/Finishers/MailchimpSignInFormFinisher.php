@@ -48,39 +48,41 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
             return;
         }
 
-        try {
-            $subscriberHash = md5(strtolower($email));
-
+        $this->api->runWithoutDeprecationNotices(function () use ($apiClient, $listId, $email, $formRuntime): void {
             try {
-                $member = $apiClient->lists->getListMember($listId, $subscriberHash);
-                if (in_array($member->status, ['pending', 'subscribed'], true)) {
-                    return;
-                }
-            } catch (ApiException $e) {
-                if ($e->getCode() !== 404) {
-                    return;
-                }
-            }
+                $subscriberHash = md5(strtolower($email));
 
-            $name = $formRuntime['name'] ?? '';
-            if ($name === '') {
-                $firstName = $formRuntime['firstName'] ?? '';
-                $lastName = $formRuntime['lastName'] ?? '';
-                $name = trim($firstName . ' ' . $lastName);
-            }
+                try {
+                    $member = $apiClient->lists->getListMember($listId, $subscriberHash);
+                    if (in_array($member->status, ['pending', 'subscribed'], true)) {
+                        return;
+                    }
+                } catch (ApiException $e) {
+                    if ($e->getCode() !== 404) {
+                        return;
+                    }
+                }
 
-            $apiClient->lists->setListMember($listId, $subscriberHash, [
-                'email_address' => $email,
-                'status_if_new' => 'pending',
-                'status' => 'pending',
-                'email_type' => 'html',
-                'ip_signup' => $_SERVER['REMOTE_ADDR'] ?? '',
-                'merge_fields' => [
-                    'FNAME' => $name,
-                ],
-            ]);
-        } catch (\Exception) {
-        }
+                $name = $formRuntime['name'] ?? '';
+                if ($name === '') {
+                    $firstName = $formRuntime['firstName'] ?? '';
+                    $lastName = $formRuntime['lastName'] ?? '';
+                    $name = trim($firstName . ' ' . $lastName);
+                }
+
+                $apiClient->lists->setListMember($listId, $subscriberHash, [
+                    'email_address' => $email,
+                    'status_if_new' => 'pending',
+                    'status' => 'pending',
+                    'email_type' => 'html',
+                    'ip_signup' => $_SERVER['REMOTE_ADDR'] ?? '',
+                    'merge_fields' => [
+                        'FNAME' => $name,
+                    ],
+                ]);
+            } catch (\Exception) {
+            }
+        });
     }
 
     /**

@@ -48,14 +48,16 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
             return;
         }
 
-        try {
-            $subscriberHash = md5(strtolower($email));
-            $apiClient->lists->deleteListMember($listId, $subscriberHash);
-        } catch (ApiException $e) {
-            if ($e->getCode() !== 404) {
-                throw $e;
+        $this->api->runWithoutDeprecationNotices(function () use ($apiClient, $listId, $email): void {
+            try {
+                $subscriberHash = md5(strtolower($email));
+                $apiClient->lists->deleteListMember($listId, $subscriberHash);
+            } catch (ApiException $e) {
+                if ($e->getCode() !== 404) {
+                    throw $e;
+                }
             }
-        }
+        });
     }
 
     /**
