@@ -44,6 +44,12 @@ TYPO3:
                           templateName: Inspector-TextEditor
                           label: 'List id'
                           propertyPath: options.listId
+                        400:
+                          identifier: emailField
+                          templateName: Inspector-TextEditor
+                          label: 'Email form field'
+                          placeholder: 'email'
+                          propertyPath: options.emailField
                         9999:
                           identifier: 'removeButton'
                           templateName: 'Inspector-RemoveElementEditor'
@@ -64,6 +70,12 @@ TYPO3:
                           templateName: Inspector-TextEditor
                           label: 'List id'
                           propertyPath: options.listId
+                        400:
+                          identifier: emailField
+                          templateName: Inspector-TextEditor
+                          label: 'Email form field'
+                          placeholder: 'email'
+                          propertyPath: options.emailField
                         9999:
                           identifier: 'removeButton'
                           templateName: 'Inspector-RemoveElementEditor'
@@ -78,6 +90,7 @@ TYPO3:
                     oauthClient: ''
                     listId: ''
                     server: ''
+                    emailField: 'email'
             MailChimpSignOut:
               implementationClassName: WapplerSystems\FormMailchimp\Finishers\MailchimpSignOutFormFinisher
               formEditor:
@@ -88,6 +101,7 @@ TYPO3:
                     oauthClient: ''
                     listId: ''
                     server: ''
+                    emailField: 'email'
       persistenceManager:
         allowedExtensionPaths:
           2354: EXT:form_mailchimp/Resources/Private/Forms/
