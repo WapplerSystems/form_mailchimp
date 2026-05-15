@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WapplerSystems\FormMailchimp\Finishers;
 
+use GuzzleHttp\Exception\ClientException;
 use MailchimpMarketing\ApiClient;
 use MailchimpMarketing\ApiException;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
@@ -75,12 +76,18 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
                         ]);
                         return;
                     }
-                } catch (ApiException $e) {
-                    if ($e->getCode() !== 404) {
+                } catch (ApiException | ClientException $e) {
+                    // Mailchimp SDK leaks Guzzle's ClientException on 4xx for
+                    // some endpoints (incl. getListMember) instead of wrapping
+                    // it as ApiException. Both expose the HTTP status — but
+                    // ClientException reaches it via getResponse().
+                    $status = $e instanceof ClientException && $e->getResponse() !== null
+                        ? $e->getResponse()->getStatusCode()
+                        : $e->getCode();
+                    if ($status !== 404) {
                         $this->logger?->error('MailchimpSignIn: getListMember failed', [
-                            'code' => $e->getCode(),
+                            'status' => $status,
                             'message' => $e->getMessage(),
-                            'body' => $e->getResponseBody(),
                         ]);
                         return;
                     }
@@ -108,11 +115,13 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
                 $this->logger?->info('MailchimpSignIn: setListMember accepted by Mailchimp', [
                     'listId' => $listId,
                 ]);
-            } catch (ApiException $e) {
+            } catch (ApiException | ClientException $e) {
+                $status = $e instanceof ClientException && $e->getResponse() !== null
+                    ? $e->getResponse()->getStatusCode()
+                    : $e->getCode();
                 $this->logger?->error('MailchimpSignIn: Mailchimp API error', [
-                    'code' => $e->getCode(),
+                    'status' => $status,
                     'message' => $e->getMessage(),
-                    'body' => $e->getResponseBody(),
                 ]);
             } catch (\Throwable $e) {
                 $this->logger?->error('MailchimpSignIn: unexpected error', [
@@ -156,13 +165,39 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
             return null;
         }
 
-        // Pass an empty server through when no DC is configured: Api::connect()
-        // then auto-resolves the DC from Mailchimp's metadata endpoint. Tokens
-        // are region-bound, so hardcoding "us1" hits 401 for any other DC.
-        $this->api->connect(
-            $connection['access_token'],
-            (string)$this->parseOption('server'),
-        );
+        // DC resolution priority:
+        //   1. explicit finisher option "server" (test/manual override)
+        //   2. connection.metadata.dc — persisted by OAuthFlowService after the
+        //      OAuth callback hit Mailchimp's /oauth2/metadata endpoint
+        //   3. Api::connect('') falls back to a live HTTP lookup if empty
+        $server = (string)$this->parseOption('server');
+        if ($server === '') {
+            $server = $this->extractDcFromConnectionMetadata($connection);
+            if ($server !== '') {
+                $this->logger?->debug('MailchimpSignIn: using DC "{dc}" from tx_oauthsvc_connection.metadata', [
+                    'dc' => $server,
+                ]);
+            }
+        }
+
+        $this->api->connect($connection['access_token'], $server);
         return $this->api->getClient();
+    }
+
+    /**
+     * @param array<string, mixed> $connection
+     */
+    private function extractDcFromConnectionMetadata(array $connection): string
+    {
+        $raw = (string)($connection['metadata'] ?? '');
+        if ($raw === '') {
+            return '';
+        }
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return '';
+        }
+        $dc = $decoded['dc'] ?? null;
+        return is_string($dc) ? $dc : '';
     }
 }
