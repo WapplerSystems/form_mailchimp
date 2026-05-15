@@ -26,3 +26,6 @@ services:
 
   WapplerSystems\FormMailchimp\Controller\Backend\FormEditorAjaxController:
     public: true
+
+  WapplerSystems\FormMailchimp\Backend\FlexForm\ListItemsProvider:
+    public: true

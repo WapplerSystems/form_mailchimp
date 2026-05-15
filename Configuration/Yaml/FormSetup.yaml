@@ -91,6 +91,24 @@ TYPO3:
                     listId: ''
                     server: ''
                     emailField: 'email'
+              # Exposes per-plugin override field when settings.overrideFinishers=1.
+              # Editors override the list ID by translating the form plugin record
+              # (sys_language_uid > 0); the localized FlexForm row supplies the
+              # value that the standard EXT:form merge picks up at runtime.
+              # The select is filled at render time by ListItemsProvider, which
+              # reads the form YAML referenced via settings.persistenceIdentifier
+              # to find the configured oauthClient and pulls the audiences from
+              # Mailchimp on the fly.
+              FormEngine:
+                label: 'MailChimp - Sign in'
+                elements:
+                  listId:
+                    label: 'Mailchimp List ID'
+                    config:
+                      type: select
+                      renderType: selectSingle
+                      itemsProcFunc: 'WapplerSystems\FormMailchimp\Backend\FlexForm\ListItemsProvider->getItems'
+                      items: []
             MailChimpSignOut:
               implementationClassName: WapplerSystems\FormMailchimp\Finishers\MailchimpSignOutFormFinisher
               formEditor:
@@ -102,6 +120,16 @@ TYPO3:
                     listId: ''
                     server: ''
                     emailField: 'email'
+              FormEngine:
+                label: 'MailChimp - Sign out'
+                elements:
+                  listId:
+                    label: 'Mailchimp List ID'
+                    config:
+                      type: select
+                      renderType: selectSingle
+                      itemsProcFunc: 'WapplerSystems\FormMailchimp\Backend\FlexForm\ListItemsProvider->getItems'
+                      items: []
       persistenceManager:
         allowedExtensionPaths:
           2354: EXT:form_mailchimp/Resources/Private/Forms/
