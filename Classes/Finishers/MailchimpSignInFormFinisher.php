@@ -7,6 +7,8 @@ namespace WapplerSystems\FormMailchimp\Finishers;
 use GuzzleHttp\Exception\ClientException;
 use MailchimpMarketing\ApiClient;
 use MailchimpMarketing\ApiException;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
 use WapplerSystems\FormMailchimp\Mailchimp\Api;
 use WapplerSystems\FormMailchimp\Service\MailchimpFormContext;
@@ -101,7 +103,7 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
                     $name = trim($firstName . ' ' . $lastName);
                 }
 
-                $apiClient->lists->setListMember($listId, $subscriberHash, [
+                $payload = [
                     'email_address' => $email,
                     'status_if_new' => 'pending',
                     'status' => 'pending',
@@ -110,10 +112,21 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
                     'merge_fields' => [
                         'FNAME' => $name,
                     ],
-                ]);
+                ];
+
+                // Mailchimp uses ISO-639-1 codes ("de", "tr", ...) for per-subscriber
+                // language. We derive it from the active TYPO3 SiteLanguage so the same
+                // form yaml works across language roots without duplication.
+                $language = $this->resolveLanguageCode();
+                if ($language !== '') {
+                    $payload['language'] = $language;
+                }
+
+                $apiClient->lists->setListMember($listId, $subscriberHash, $payload);
 
                 $this->logger?->info('MailchimpSignIn: setListMember accepted by Mailchimp', [
                     'listId' => $listId,
+                    'language' => $language ?: '(unset)',
                 ]);
             } catch (ApiException | ClientException $e) {
                 $status = $e instanceof ClientException && $e->getResponse() !== null
@@ -199,5 +212,29 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
         }
         $dc = $decoded['dc'] ?? null;
         return is_string($dc) ? $dc : '';
+    }
+
+    /**
+     * Resolves the ISO-639-1 language code to push to Mailchimp's "language" field.
+     * Priority: finisher option "language" (explicit override) > current TYPO3
+     * SiteLanguage (derived from the request). Returns '' when neither is set,
+     * in which case the language key is omitted from the Mailchimp payload.
+     */
+    private function resolveLanguageCode(): string
+    {
+        $optionLang = trim((string)$this->parseOption('language'));
+        if ($optionLang !== '') {
+            return strtolower($optionLang);
+        }
+
+        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
+        if (!$request instanceof ServerRequestInterface) {
+            return '';
+        }
+        $siteLanguage = $request->getAttribute('language');
+        if (!$siteLanguage instanceof SiteLanguage) {
+            return '';
+        }
+        return strtolower($siteLanguage->getLocale()->getLanguageCode());
     }
 }
