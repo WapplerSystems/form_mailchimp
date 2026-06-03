@@ -21,9 +21,6 @@ services:
     public: true
     shared: true
 
-  WapplerSystems\FormMailchimp\Form\Hook\AfterSubmitHook:
-    public: true
-
   WapplerSystems\FormMailchimp\Controller\Backend\FormEditorAjaxController:
     public: true
 

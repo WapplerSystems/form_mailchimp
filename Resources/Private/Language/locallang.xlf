@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" product-name="form_mailchimp">
+		<header/>
+		<body>
+			<trans-unit id="finisher.signIn.emailRejected">
+				<source>This e-mail address could not be subscribed. Please use a different e-mail address.</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

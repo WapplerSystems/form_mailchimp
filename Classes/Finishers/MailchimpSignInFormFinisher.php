@@ -8,7 +8,10 @@ use GuzzleHttp\Exception\ClientException;
 use MailchimpMarketing\ApiClient;
 use MailchimpMarketing\ApiException;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Form\Domain\Finishers\AbstractFinisher;
 use WapplerSystems\FormMailchimp\Mailchimp\Api;
 use WapplerSystems\FormMailchimp\Service\MailchimpFormContext;
@@ -24,8 +27,8 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
 
     /**
      * Called by EXT:form when the form definition is built — before validators run.
-     * Populates MailchimpFormContext so AfterSubmitHook (and any future validators)
-     * can access listId, oauthClient and server.
+     * Populates MailchimpFormContext so future validators can access
+     * listId, oauthClient and server.
      */
     public function setOptions(array $options): void
     {
@@ -129,12 +132,27 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
                     'language' => $language ?: '(unset)',
                 ]);
             } catch (ApiException | ClientException $e) {
-                $status = $e instanceof ClientException && $e->getResponse() !== null
-                    ? $e->getResponse()->getStatusCode()
-                    : $e->getCode();
+                $response = $e instanceof ClientException ? $e->getResponse() : null;
+                $status = $response !== null ? $response->getStatusCode() : $e->getCode();
+                $body = $response !== null ? (string)$response->getBody() : '';
+
+                // Mailchimp 400 "Invalid Resource" is user-input rejection:
+                // the anti-fake-email/disposable filter blocks the address even
+                // though it passes RFC-5322 validation. Surface a localized
+                // field-level error so the user stops retrying the same address.
+                if ($status === 400 && str_contains($body, 'Invalid Resource')) {
+                    $this->logger?->warning('MailchimpSignIn: Mailchimp rejected subscription (400 Invalid Resource)', [
+                        'email' => $email,
+                        'response' => $body,
+                    ]);
+                    $this->replaceConfirmationMessageWithError();
+                    return;
+                }
+
                 $this->logger?->error('MailchimpSignIn: Mailchimp API error', [
                     'status' => $status,
                     'message' => $e->getMessage(),
+                    'response' => $body,
                 ]);
             } catch (\Throwable $e) {
                 $this->logger?->error('MailchimpSignIn: unexpected error', [
@@ -236,5 +254,38 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
             return '';
         }
         return strtolower($siteLanguage->getLocale()->getLanguageCode());
+    }
+
+    /**
+     * Replaces the next Confirmation finisher's `message` option with a localized
+     * "this address could not be subscribed" error. The user otherwise sees the
+     * default "thanks, please check your email" confirmation and keeps retrying
+     * the same address — see logs where the same hash appears 6–8× in a minute.
+     */
+    private function replaceConfirmationMessageWithError(): void
+    {
+        $message = $this->translateRejectMessage();
+        foreach ($this->finisherContext->getFormRuntime()->getFormDefinition()->getFinishers() as $finisher) {
+            if ($finisher->getFinisherIdentifier() === 'Confirmation') {
+                $finisher->setOption('message', $message);
+                return;
+            }
+        }
+    }
+
+    private function translateRejectMessage(): string
+    {
+        $fallback = 'This e-mail address could not be subscribed. Please use a different e-mail address.';
+        $request = $GLOBALS['TYPO3_REQUEST'] ?? null;
+        $siteLanguage = $request instanceof ServerRequestInterface
+            ? $request->getAttribute('language')
+            : null;
+        $languageService = $siteLanguage instanceof SiteLanguage
+            ? GeneralUtility::makeInstance(LanguageServiceFactory::class)->createFromSiteLanguage($siteLanguage)
+            : GeneralUtility::makeInstance(LanguageServiceFactory::class)->create('default');
+        $translated = $languageService->sL(
+            'LLL:EXT:form_mailchimp/Resources/Private/Language/locallang.xlf:finisher.signIn.emailRejected'
+        );
+        return $translated !== '' ? $translated : $fallback;
     }
 }

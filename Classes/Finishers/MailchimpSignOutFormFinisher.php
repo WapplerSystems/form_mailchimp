@@ -22,8 +22,8 @@ class MailchimpSignOutFormFinisher extends AbstractFinisher
 
     /**
      * Called by EXT:form when the form definition is built — before validators run.
-     * Populates MailchimpFormContext so AfterSubmitHook (and any future validators)
-     * can access listId, oauthClient and server.
+     * Populates MailchimpFormContext so future validators can access
+     * listId, oauthClient and server.
      */
     public function setOptions(array $options): void
     {
