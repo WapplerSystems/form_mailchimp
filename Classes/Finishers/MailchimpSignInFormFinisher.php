@@ -265,12 +265,23 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
     private function replaceConfirmationMessageWithError(): void
     {
         $message = $this->translateRejectMessage();
+        $seen = [];
         foreach ($this->finisherContext->getFormRuntime()->getFormDefinition()->getFinishers() as $finisher) {
-            if ($finisher->getFinisherIdentifier() === 'Confirmation') {
+            $id = $finisher->getFinisherIdentifier();
+            $seen[] = $id;
+            if ($id === 'Confirmation') {
                 $finisher->setOption('message', $message);
+                $this->logger?->warning('MailchimpSignIn: replaced Confirmation message', [
+                    'newMessage' => $message,
+                    'finisherClass' => $finisher::class,
+                ]);
                 return;
             }
         }
+        $this->logger?->warning('MailchimpSignIn: Confirmation finisher not found in chain', [
+            'seenIdentifiers' => $seen,
+            'newMessage' => $message,
+        ]);
     }
 
     private function translateRejectMessage(): string
