@@ -270,9 +270,16 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
             $id = $finisher->getFinisherIdentifier();
             $seen[] = $id;
             if ($id === 'Confirmation') {
+                $before = (new \ReflectionClass($finisher))->getProperty('options');
+                $before->setAccessible(true);
+                $beforeMsg = $before->getValue($finisher)['message'] ?? '(none)';
                 $finisher->setOption('message', $message);
+                $afterMsg = $before->getValue($finisher)['message'] ?? '(none)';
                 $this->logger?->warning('MailchimpSignIn: replaced Confirmation message', [
                     'newMessage' => $message,
+                    'beforeMessage' => $beforeMsg,
+                    'afterMessage' => $afterMsg,
+                    'finisherHash' => spl_object_hash($finisher),
                     'finisherClass' => $finisher::class,
                 ]);
                 return;
