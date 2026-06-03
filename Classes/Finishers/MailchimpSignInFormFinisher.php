@@ -36,9 +36,10 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
         $this->context->setSettings($this->options);
     }
 
-    protected function executeInternal(): void
+    protected function executeInternal(): ?string
     {
         $this->logger?->info('MailchimpSignIn: finisher invoked');
+        $rejectedOutput = null;
 
         $formRuntime = $this->finisherContext->getFormRuntime();
         $emailField = (string)($this->parseOption('emailField') ?: 'email');
@@ -48,19 +49,19 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
             $this->logger?->warning('MailchimpSignIn: aborting — no email value in form field "{field}"', [
                 'field' => $emailField,
             ]);
-            return;
+            return null;
         }
 
         $listId = $this->parseOption('listId') ?: '';
         if ($listId === '') {
             $this->logger?->warning('MailchimpSignIn: aborting — finisher option "listId" is empty');
-            return;
+            return null;
         }
 
         $apiClient = $this->ensureConnectedClient();
         if ($apiClient === null) {
             $this->logger?->warning('MailchimpSignIn: aborting — no connected Mailchimp ApiClient');
-            return;
+            return null;
         }
 
         $this->logger?->info('MailchimpSignIn: calling Mailchimp', [
@@ -68,7 +69,7 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
             'listId' => $listId,
         ]);
 
-        $this->api->runWithoutDeprecationNotices(function () use ($apiClient, $listId, $email, $formRuntime): void {
+        $this->api->runWithoutDeprecationNotices(function () use ($apiClient, $listId, $email, $formRuntime, &$rejectedOutput): void {
             try {
                 $subscriberHash = md5(strtolower($email));
 
@@ -145,7 +146,15 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
                         'email' => $email,
                         'response' => $body,
                     ]);
-                    $this->replaceConfirmationMessageWithError();
+                    // Render our own confirmation-style output and cancel
+                    // further finishers, so the user sees the localized
+                    // rejection instead of the misleading "thanks" message.
+                    // Modifying the next ConfirmationFinisher's `message`
+                    // option does not work here — the AJAX-form pipeline
+                    // appears to load fresh finisher options between this
+                    // catch and ConfirmationFinisher::executeInternal().
+                    $rejectedOutput = $this->renderRejectionOutput($formRuntime);
+                    $this->finisherContext->cancel();
                     return;
                 }
 
@@ -163,6 +172,27 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
                 ]);
             }
         });
+
+        return $rejectedOutput;
+    }
+
+    /**
+     * Renders the same wrapper EXT:linear's Confirmation.html template uses,
+     * so the rejection message visually matches the success message in the
+     * AJAX modal (.alert.alert-info with form identifier as id).
+     */
+    private function renderRejectionOutput(\TYPO3\CMS\Form\Domain\Runtime\FormRuntime $formRuntime): string
+    {
+        $message = $this->translateRejectMessage();
+        $formId = htmlspecialchars($formRuntime->getFormDefinition()->getIdentifier(), ENT_QUOTES, 'UTF-8');
+        $tags = htmlspecialchars((string)($formRuntime->getRenderingOptions()['tags'] ?? ''), ENT_QUOTES, 'UTF-8');
+        $msg = nl2br(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
+        return sprintf(
+            '<div class="alert alert-warning" id="%s" data-formstate="rejected" data-tags="%s">%s</div>',
+            $formId,
+            $tags,
+            $msg
+        );
     }
 
     /**
@@ -254,41 +284,6 @@ class MailchimpSignInFormFinisher extends AbstractFinisher
             return '';
         }
         return strtolower($siteLanguage->getLocale()->getLanguageCode());
-    }
-
-    /**
-     * Replaces the next Confirmation finisher's `message` option with a localized
-     * "this address could not be subscribed" error. The user otherwise sees the
-     * default "thanks, please check your email" confirmation and keeps retrying
-     * the same address — see logs where the same hash appears 6–8× in a minute.
-     */
-    private function replaceConfirmationMessageWithError(): void
-    {
-        $message = $this->translateRejectMessage();
-        $seen = [];
-        foreach ($this->finisherContext->getFormRuntime()->getFormDefinition()->getFinishers() as $finisher) {
-            $id = $finisher->getFinisherIdentifier();
-            $seen[] = $id;
-            if ($id === 'Confirmation') {
-                $before = (new \ReflectionClass($finisher))->getProperty('options');
-                $before->setAccessible(true);
-                $beforeMsg = $before->getValue($finisher)['message'] ?? '(none)';
-                $finisher->setOption('message', $message);
-                $afterMsg = $before->getValue($finisher)['message'] ?? '(none)';
-                $this->logger?->warning('MailchimpSignIn: replaced Confirmation message', [
-                    'newMessage' => $message,
-                    'beforeMessage' => $beforeMsg,
-                    'afterMessage' => $afterMsg,
-                    'finisherHash' => spl_object_hash($finisher),
-                    'finisherClass' => $finisher::class,
-                ]);
-                return;
-            }
-        }
-        $this->logger?->warning('MailchimpSignIn: Confirmation finisher not found in chain', [
-            'seenIdentifiers' => $seen,
-            'newMessage' => $message,
-        ]);
     }
 
     private function translateRejectMessage(): string
